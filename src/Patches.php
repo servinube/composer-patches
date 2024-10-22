@@ -8,9 +8,6 @@
 namespace cweagans\Composer;
 
 use Composer\Composer;
-use Composer\DependencyResolver\DefaultPolicy;
-use Composer\DependencyResolver\Pool;
-use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
@@ -40,7 +37,7 @@ class Patches implements PluginInterface, EventSubscriberInterface {
    */
   protected $io;
   /**
-   * @var EventDispatcher $eventDispatcher
+   * @var \Composer\EventDispatcher\EventDispatcher $eventDispatcher
    */
   protected $eventDispatcher;
   /**
@@ -147,13 +144,23 @@ class Patches implements PluginInterface, EventSubscriberInterface {
             $uninstallOperation = new UninstallOperation($package, 'Removing package so it can be re-installed and re-patched.');
             $this->io->write('<info>Removing package ' . $package_name . ' so that it can be re-installed and re-patched.</info>');
 
-            $this->eventDispatcher
-              ->dispatchPackageEvent(PackageEvents::PRE_PACKAGE_UNINSTALL, $event->isDevMode(), new DefaultPolicy(), new Pool('dev'), new CompositeRepository([$package->getRepository()]), new Request(), [$uninstallOperation], $uninstallOperation);
+            $this->eventDispatcher->dispatchPackageEvent(
+              PackageEvents::PRE_PACKAGE_UNINSTALL,
+              $event->isDevMode(),
+              new CompositeRepository([$package->getRepository()]),
+              [$uninstallOperation],
+              $uninstallOperation
+            );
 
             $promises[] = $installationManager->uninstall($localRepository, $uninstallOperation);
 
-            $this->eventDispatcher
-              ->dispatchPackageEvent(PackageEvents::POST_PACKAGE_UNINSTALL, $event->isDevMode(), new DefaultPolicy(), new Pool('dev'), new CompositeRepository([$package->getRepository()]), new Request(), [$uninstallOperation], $uninstallOperation);
+            $this->eventDispatcher->dispatchPackageEvent(
+              PackageEvents::POST_PACKAGE_UNINSTALL,
+              $event->isDevMode(),
+              new CompositeRepository([$package->getRepository()]),
+              [$uninstallOperation],
+              $uninstallOperation
+            );
           }
         }
       }
